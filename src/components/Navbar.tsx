@@ -29,7 +29,7 @@ const COUNTRIES = [
   { code: "AU", name: "Australia (000)", emergency: "000" },
 ];
 
-export function Navbar({
+export const Navbar = React.memo(function Navbar({
   country,
   setCountry,
   hasCustomKey,
@@ -141,4 +141,4 @@ export function Navbar({
       </div>
     </header>
   );
-}
+});

@@ -31,7 +31,10 @@ interface PipelineStageViewProps {
   onOpenHandover: () => void;
 }
 
-export function PipelineStageView({ data, onOpenHandover }: PipelineStageViewProps) {
+export const PipelineStageView = React.memo(function PipelineStageView({
+  data,
+  onOpenHandover,
+}: PipelineStageViewProps) {
   const [isSpeaking, setIsSpeaking] = useState(false);
   const [copiedScript, setCopiedScript] = useState(false);
   const [activeTab, setActiveTab] = useState<"all" | "understand" | "verify" | "act">("all");
@@ -580,4 +583,4 @@ export function PipelineStageView({ data, onOpenHandover }: PipelineStageViewPro
       </div>
     </div>
   );
-}
+});

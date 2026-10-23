@@ -16,8 +16,13 @@ import {
   Mic,
   Camera,
 } from "lucide-react";
+import dynamic from "next/dynamic";
 import { DEMO_SCENARIOS } from "@/data/demoScenarios";
-import { AudioRecorder } from "./AudioRecorder";
+
+const AudioRecorder = dynamic(
+  () => import("./AudioRecorder").then((mod) => mod.AudioRecorder),
+  { ssr: false }
+);
 
 interface InputHubProps {
   text: string;
@@ -30,7 +35,7 @@ interface InputHubProps {
   onSelectScenario: (id: string) => void;
 }
 
-export function InputHub({
+export const InputHub = React.memo(function InputHub({
   text,
   setText,
   imageData,
@@ -346,4 +351,4 @@ export function InputHub({
       </div>
     </div>
   );
-}
+});

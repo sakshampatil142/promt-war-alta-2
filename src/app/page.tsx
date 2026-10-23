@@ -1,14 +1,28 @@
 "use client";
 
 import React, { useState, useCallback } from "react";
+import dynamic from "next/dynamic";
 import { Navbar } from "@/components/Navbar";
 import { InputHub } from "@/components/InputHub";
 import { PipelineStageView } from "@/components/PipelineStageView";
-import { ApiKeyModal } from "@/components/ApiKeyModal";
-import { HandoverSheetModal } from "@/components/HandoverSheetModal";
-import { RubricModal } from "@/components/RubricModal";
 import { LifeBridgeOutput } from "@/types/lifebridge";
 import { DEMO_SCENARIOS } from "@/data/demoScenarios";
+
+// Dynamic code splitting for modals to minimize critical render bundle
+const ApiKeyModal = dynamic(
+  () => import("@/components/ApiKeyModal").then((mod) => mod.ApiKeyModal),
+  { ssr: false }
+);
+
+const HandoverSheetModal = dynamic(
+  () => import("@/components/HandoverSheetModal").then((mod) => mod.HandoverSheetModal),
+  { ssr: false }
+);
+
+const RubricModal = dynamic(
+  () => import("@/components/RubricModal").then((mod) => mod.RubricModal),
+  { ssr: false }
+);
 import {
   Brain,
   ShieldCheck,
