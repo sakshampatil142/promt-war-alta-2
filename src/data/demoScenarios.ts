@@ -1,4 +1,4 @@
-import { DemoScenario } from "@/types/lifebridge";
+import { DemoScenario } from "../types/lifebridge";
 
 export const DEMO_SCENARIOS: DemoScenario[] = [
   {

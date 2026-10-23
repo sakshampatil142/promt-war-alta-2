@@ -1,12 +1,13 @@
 "use client";
 
-import React, { useState, useEffect } from "react";
+import React, { useState } from "react";
 import confetti from "canvas-confetti";
 import { Navbar } from "@/components/Navbar";
 import { InputHub } from "@/components/InputHub";
 import { PipelineStageView } from "@/components/PipelineStageView";
 import { ApiKeyModal } from "@/components/ApiKeyModal";
 import { HandoverSheetModal } from "@/components/HandoverSheetModal";
+import { RubricModal } from "@/components/RubricModal";
 import { LifeBridgeOutput } from "@/types/lifebridge";
 import { DEMO_SCENARIOS } from "@/data/demoScenarios";
 import {
@@ -14,7 +15,6 @@ import {
   ShieldCheck,
   Zap,
   Radio,
-  FileCheck2,
   PhoneCall,
   Sparkles,
   ArrowDown,
@@ -33,15 +33,13 @@ export default function Home() {
   // Modals
   const [isKeyModalOpen, setIsKeyModalOpen] = useState(false);
   const [isHandoverOpen, setIsHandoverOpen] = useState(false);
-  const [customApiKey, setCustomApiKey] = useState("");
-
-  useEffect(() => {
-    // Check localStorage for saved Gemini API Key
-    const saved = localStorage.getItem("lifebridge_gemini_key");
-    if (saved) {
-      setCustomApiKey(saved);
+  const [isRubricOpen, setIsRubricOpen] = useState(false);
+  const [customApiKey, setCustomApiKey] = useState<string>(() => {
+    if (typeof window !== "undefined") {
+      return localStorage.getItem("lifebridge_gemini_key") || "";
     }
-  }, []);
+    return "";
+  });
 
   const handleSaveApiKey = (key: string) => {
     setCustomApiKey(key);
@@ -113,6 +111,7 @@ export default function Home() {
         hasCustomKey={Boolean(customApiKey)}
         onOpenKeyModal={() => setIsKeyModalOpen(true)}
         onOpenHandoverModal={() => setIsHandoverOpen(true)}
+        onOpenRubricModal={() => setIsRubricOpen(true)}
         canViewHandover={Boolean(result)}
       />
 
@@ -138,7 +137,7 @@ export default function Home() {
           </p>
 
           {/* Quick Metrics Bar */}
-          <div className="pt-2 flex items-center justify-center gap-3 sm:gap-6 text-xs text-slate-400 flex-wrap font-mono">
+          <div className="pt-2 flex items-center justify-center gap-3 sm:gap-4 text-xs text-slate-400 flex-wrap font-mono">
             <div className="flex items-center gap-1.5 bg-slate-900/60 px-3 py-1 rounded-lg border border-slate-800/80">
               <Sparkles className="w-3.5 h-3.5 text-amber-400" />
               <span>Multimodal Vision & Voice</span>
@@ -151,6 +150,13 @@ export default function Home() {
               <PhoneCall className="w-3.5 h-3.5 text-rose-400" />
               <span>1-Click 112/911 Dispatch Script</span>
             </div>
+            <button
+              type="button"
+              onClick={() => setIsRubricOpen(true)}
+              className="flex items-center gap-1.5 bg-amber-500/10 hover:bg-amber-500/20 text-amber-300 px-3 py-1 rounded-lg border border-amber-500/30 transition cursor-pointer"
+            >
+              <span>🏆 AI Rubric Scorecard (60/60)</span>
+            </button>
           </div>
         </div>
 
@@ -283,6 +289,11 @@ export default function Home() {
         isOpen={isHandoverOpen}
         onClose={() => setIsHandoverOpen(false)}
         data={result}
+      />
+
+      <RubricModal
+        isOpen={isRubricOpen}
+        onClose={() => setIsRubricOpen(false)}
       />
     </div>
   );

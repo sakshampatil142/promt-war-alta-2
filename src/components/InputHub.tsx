@@ -147,43 +147,49 @@ export function InputHub({
       <div className="rounded-2xl glass-panel border border-slate-800/80 p-4 sm:p-5 shadow-2xl relative overflow-hidden">
         {/* Input Mode Selector Bar */}
         <div className="flex items-center justify-between pb-3 mb-3 border-b border-slate-800/80 flex-wrap gap-2">
-          <div className="flex items-center gap-1.5 bg-slate-950/80 p-1 rounded-xl border border-slate-800">
+          <div role="tablist" aria-label="Input Modality Selection" className="flex items-center gap-1.5 bg-slate-950/80 p-1 rounded-xl border border-slate-800">
             <button
               type="button"
+              role="tab"
+              aria-selected={activeTab === "text"}
               onClick={() => setActiveTab("text")}
-              className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium transition ${
+              className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium transition focus-visible:ring-2 focus-visible:ring-rose-500 ${
                 activeTab === "text"
                   ? "bg-slate-800 text-white shadow-sm"
                   : "text-slate-400 hover:text-slate-200"
               }`}
             >
-              <FileText className="w-3.5 h-3.5" />
+              <FileText className="w-3.5 h-3.5" aria-hidden="true" />
               <span>Frantic Text</span>
             </button>
 
             <button
               type="button"
+              role="tab"
+              aria-selected={activeTab === "audio"}
               onClick={() => setActiveTab("audio")}
-              className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium transition ${
+              className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium transition focus-visible:ring-2 focus-visible:ring-rose-500 ${
                 activeTab === "audio"
                   ? "bg-rose-600 text-white shadow-sm"
                   : "text-slate-400 hover:text-slate-200"
               }`}
             >
-              <Mic className="w-3.5 h-3.5" />
+              <Mic className="w-3.5 h-3.5" aria-hidden="true" />
               <span>Voice Call / Audio</span>
             </button>
 
             <button
               type="button"
+              role="tab"
+              aria-selected={activeTab === "image"}
               onClick={() => setActiveTab("image")}
-              className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium transition ${
+              className={`flex items-center gap-1.5 px-3 py-1.5 rounded-lg text-xs font-medium transition focus-visible:ring-2 focus-visible:ring-rose-500 ${
                 activeTab === "image"
                   ? "bg-slate-800 text-white shadow-sm"
                   : "text-slate-400 hover:text-slate-200"
               }`}
             >
-              <Camera className="w-3.5 h-3.5" />
+              <Camera className="w-3.5 h-3.5" aria-hidden="true" />
               <span>Photo / Document</span>
             </button>
           </div>
@@ -196,12 +202,12 @@ export function InputHub({
                   setText("");
                   setImageData(null);
                 }}
-                className="text-[11px] text-slate-400 hover:text-slate-200 px-2 py-1 rounded hover:bg-slate-800 transition"
+                className="text-[11px] text-slate-400 hover:text-slate-200 px-2 py-1 rounded hover:bg-slate-800 transition focus-visible:ring-2 focus-visible:ring-rose-500"
               >
                 Clear Input
               </button>
             )}
-            <span className="text-[11px] font-mono text-slate-500">
+            <span className="text-[11px] font-mono text-slate-500" aria-live="polite">
               {text.length} chars
             </span>
           </div>
@@ -282,7 +288,12 @@ export function InputHub({
 
         {/* Textarea for Unstructured Human Intent */}
         <div className="relative">
+          <label htmlFor="emergency-input-textarea" className="sr-only">
+            Raw Unstructured Emergency Information
+          </label>
           <textarea
+            id="emergency-input-textarea"
+            aria-label="Raw Unstructured Emergency Information"
             value={text}
             onChange={(e) => setText(e.target.value)}
             placeholder="Paste or type raw, messy, frantic information here... (e.g. frantic 112 emergency calls, fragmented doctor prescriptions, conflicting flood notices, or legal insurance forms)"

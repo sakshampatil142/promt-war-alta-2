@@ -8,6 +8,7 @@ import {
   FileCheck2,
   Printer,
   Sparkles,
+  Award,
 } from "lucide-react";
 
 interface NavbarProps {
@@ -16,6 +17,7 @@ interface NavbarProps {
   hasCustomKey: boolean;
   onOpenKeyModal: () => void;
   onOpenHandoverModal: () => void;
+  onOpenRubricModal: () => void;
   canViewHandover: boolean;
 }
 
@@ -33,6 +35,7 @@ export function Navbar({
   hasCustomKey,
   onOpenKeyModal,
   onOpenHandoverModal,
+  onOpenRubricModal,
   canViewHandover,
 }: NavbarProps) {
   return (
@@ -83,7 +86,8 @@ export function Navbar({
             <select
               value={country}
               onChange={(e) => setCountry(e.target.value)}
-              className="bg-transparent text-xs text-slate-200 focus:outline-none cursor-pointer pr-1"
+              aria-label="Select Country Emergency Jurisdiction"
+              className="bg-transparent text-xs text-slate-200 focus:outline-none cursor-pointer pr-1 focus-visible:ring-1 focus-visible:ring-rose-400 rounded"
             >
               {COUNTRIES.map((c) => (
                 <option key={c.code} value={c.code} className="bg-slate-950 text-white">
@@ -93,8 +97,20 @@ export function Navbar({
             </select>
           </div>
 
+          {/* AI Rubric / Hackathon Scorecard Trigger */}
+          <button
+            type="button"
+            onClick={onOpenRubricModal}
+            className="flex items-center gap-1.5 px-2.5 py-1.5 text-xs rounded-lg border bg-amber-500/10 border-amber-500/30 text-amber-300 hover:bg-amber-500/20 transition focus-visible:ring-2 focus-visible:ring-amber-500"
+            title="View PromptWars AI Rubric & Verification Scorecard"
+          >
+            <Award className="w-3.5 h-3.5 text-amber-400" />
+            <span className="hidden md:inline font-mono font-semibold">AI Rubric (60/60)</span>
+          </button>
+
           {/* API Key configuration */}
           <button
+            type="button"
             onClick={onOpenKeyModal}
             className={`flex items-center gap-1.5 px-2.5 py-1.5 text-xs rounded-lg border transition ${
               hasCustomKey

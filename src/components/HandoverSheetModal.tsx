@@ -95,50 +95,60 @@ ${professionalHandover.clinicalOrOfficialNotes || "Standard protocol applies."}
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-6 bg-black/85 backdrop-blur-md overflow-y-auto animate-in fade-in duration-200">
+    <div
+      role="dialog"
+      aria-modal="true"
+      aria-labelledby="handover-modal-title"
+      className="fixed inset-0 z-50 flex items-center justify-center p-3 sm:p-6 bg-black/85 backdrop-blur-md overflow-y-auto animate-in fade-in duration-200"
+    >
       <div className="relative w-full max-w-3xl my-auto bg-slate-900 border border-slate-700/80 rounded-2xl shadow-2xl overflow-hidden flex flex-col max-h-[92vh]">
         {/* Modal Toolbar (No-Print) */}
         <div className="no-print flex items-center justify-between p-4 bg-slate-950 border-b border-slate-800">
           <div className="flex items-center gap-2">
-            <Activity className="w-5 h-5 text-rose-500" />
-            <h3 className="text-sm font-bold text-white font-mono uppercase tracking-wider">
+            <Activity className="w-5 h-5 text-rose-500" aria-hidden="true" />
+            <h2 id="handover-modal-title" className="text-sm font-bold text-white font-mono uppercase tracking-wider">
               Emergency Handover Documentation
-            </h3>
+            </h2>
           </div>
 
           <div className="flex items-center gap-2">
             <button
+              type="button"
               onClick={handleCopyMarkdown}
-              className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-200 border border-slate-700 transition"
-              title="Copy as Markdown"
+              aria-label="Copy Handover Report as Markdown"
+              className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-200 border border-slate-700 transition focus-visible:ring-2 focus-visible:ring-rose-500"
             >
-              {copied ? <Check className="w-3.5 h-3.5 text-emerald-400" /> : <Copy className="w-3.5 h-3.5" />}
+              {copied ? <Check className="w-3.5 h-3.5 text-emerald-400" aria-hidden="true" /> : <Copy className="w-3.5 h-3.5" aria-hidden="true" />}
               <span className="hidden sm:inline">{copied ? "Copied" : "Copy MD"}</span>
             </button>
 
             <button
+              type="button"
               onClick={handleDownloadJSON}
-              className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-200 border border-slate-700 transition"
-              title="Download JSON"
+              aria-label="Download Handover JSON"
+              className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-medium rounded-lg bg-slate-800 hover:bg-slate-700 text-slate-200 border border-slate-700 transition focus-visible:ring-2 focus-visible:ring-rose-500"
             >
-              <Download className="w-3.5 h-3.5" />
+              <Download className="w-3.5 h-3.5" aria-hidden="true" />
               <span className="hidden sm:inline">JSON</span>
             </button>
 
             <button
+              type="button"
               onClick={handlePrint}
-              className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold rounded-lg bg-emerald-600 hover:bg-emerald-500 text-white transition shadow-md"
-              title="Print handover sheet"
+              aria-label="Print Handover Sheet"
+              className="inline-flex items-center gap-1.5 px-3 py-1.5 text-xs font-semibold rounded-lg bg-emerald-600 hover:bg-emerald-500 text-white transition shadow-md focus-visible:ring-2 focus-visible:ring-emerald-400"
             >
-              <Printer className="w-3.5 h-3.5" />
+              <Printer className="w-3.5 h-3.5" aria-hidden="true" />
               <span>Print Sheet</span>
             </button>
 
             <button
+              type="button"
               onClick={onClose}
-              className="p-1.5 rounded-lg text-slate-400 hover:text-white hover:bg-slate-800 transition"
+              aria-label="Close Handover Sheet modal"
+              className="p-1.5 rounded-lg text-slate-400 hover:text-white hover:bg-slate-800 transition focus-visible:ring-2 focus-visible:ring-rose-500"
             >
-              <X className="w-5 h-5" />
+              <X className="w-5 h-5" aria-hidden="true" />
             </button>
           </div>
         </div>
@@ -167,9 +177,9 @@ ${professionalHandover.clinicalOrOfficialNotes || "Standard protocol applies."}
           {/* Timeline */}
           {professionalHandover.timeline?.length > 0 && (
             <div>
-              <h2 className="text-xs font-bold uppercase tracking-wider text-slate-400 font-mono mb-2">
+              <h3 className="text-xs font-bold uppercase tracking-wider text-slate-400 font-mono mb-2">
                 1. Incident & Clinical Timeline
-              </h2>
+              </h3>
               <div className="space-y-2 border-l-2 border-slate-700 pl-4 py-1">
                 {professionalHandover.timeline.map((item, idx) => (
                   <div key={idx} className="relative">
@@ -234,9 +244,9 @@ ${professionalHandover.clinicalOrOfficialNotes || "Standard protocol applies."}
 
           {/* Immediate Action Orders */}
           <div>
-            <h2 className="text-xs font-bold uppercase tracking-wider text-slate-400 font-mono mb-2">
+            <h3 className="text-xs font-bold uppercase tracking-wider text-slate-400 font-mono mb-2">
               2. Immediate Action Orders Required
-            </h2>
+            </h3>
             <div className="space-y-2">
               {actionPlan.immediateSteps.map((s) => (
                 <div

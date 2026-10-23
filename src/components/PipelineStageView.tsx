@@ -17,7 +17,6 @@ import {
   Copy,
   Check,
   FileCheck2,
-  Clock,
   MapPin,
   Sparkles,
   PhoneCall,
@@ -465,7 +464,8 @@ export function PipelineStageView({ data, onOpenHandover }: PipelineStageViewPro
                 <button
                   type="button"
                   onClick={() => handleSpeak(actionPlan.operatorScript)}
-                  className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-lg text-xs font-medium border transition ${
+                  aria-label={isSpeaking ? "Stop Voice Read Aloud" : "Read Aloud Dispatch Script"}
+                  className={`inline-flex items-center gap-1.5 px-3 py-1 rounded-lg text-xs font-medium border transition focus-visible:ring-2 focus-visible:ring-rose-500 ${
                     isSpeaking
                       ? "bg-rose-500 text-white border-rose-400 animate-pulse"
                       : "bg-slate-800 hover:bg-slate-700 text-slate-200 border-slate-700"
@@ -473,12 +473,12 @@ export function PipelineStageView({ data, onOpenHandover }: PipelineStageViewPro
                 >
                   {isSpeaking ? (
                     <>
-                      <VolumeX className="w-3.5 h-3.5" />
+                      <VolumeX className="w-3.5 h-3.5" aria-hidden="true" />
                       <span>Stop Voice</span>
                     </>
                   ) : (
                     <>
-                      <Volume2 className="w-3.5 h-3.5 text-rose-400" />
+                      <Volume2 className="w-3.5 h-3.5 text-rose-400" aria-hidden="true" />
                       <span>Read Aloud</span>
                     </>
                   )}
@@ -487,16 +487,17 @@ export function PipelineStageView({ data, onOpenHandover }: PipelineStageViewPro
                 <button
                   type="button"
                   onClick={handleCopyScript}
-                  className="inline-flex items-center gap-1.5 px-3 py-1 rounded-lg text-xs font-medium bg-slate-800 hover:bg-slate-700 text-slate-200 border border-slate-700 transition"
+                  aria-label="Copy Operator Dispatch Script"
+                  className="inline-flex items-center gap-1.5 px-3 py-1 rounded-lg text-xs font-medium bg-slate-800 hover:bg-slate-700 text-slate-200 border border-slate-700 transition focus-visible:ring-2 focus-visible:ring-rose-500"
                 >
                   {copiedScript ? (
                     <>
-                      <Check className="w-3.5 h-3.5 text-emerald-400" />
+                      <Check className="w-3.5 h-3.5 text-emerald-400" aria-hidden="true" />
                       <span>Copied!</span>
                     </>
                   ) : (
                     <>
-                      <Copy className="w-3.5 h-3.5" />
+                      <Copy className="w-3.5 h-3.5" aria-hidden="true" />
                       <span>Copy Script</span>
                     </>
                   )}

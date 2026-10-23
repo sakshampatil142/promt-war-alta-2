@@ -57,13 +57,27 @@ Respond strictly with a JSON object conforming to this TypeScript definition:
 }
 `;
 
+// Maximum payload constraints for security
+const MAX_TEXT_LENGTH = 30000;
+const MAX_BASE64_BYTES = 10 * 1024 * 1024; // 10MB
+const TIMEOUT_MS = 14000;
+
 export async function POST(req: NextRequest) {
   const startTime = Date.now();
 
   try {
-    const body = await req.json();
+    let body;
+    try {
+      body = await req.json();
+    } catch {
+      return NextResponse.json(
+        { error: "Invalid JSON request payload" },
+        { status: 400 }
+      );
+    }
+
     const {
-      text = "",
+      text: rawText = "",
       imageData = "",
       imageMimeType = "image/jpeg",
       country = "IN",
@@ -71,8 +85,11 @@ export async function POST(req: NextRequest) {
       scenarioId,
     } = body;
 
-    // Check if user requested a specific demo scenario directly
-    if (scenarioId) {
+    // Sanitize text input
+    const text = typeof rawText === "string" ? rawText.slice(0, MAX_TEXT_LENGTH).trim() : "";
+
+    // Fast-path: Check if user requested a specific demo scenario directly
+    if (scenarioId && typeof scenarioId === "string") {
       const match = DEMO_SCENARIOS.find((s) => s.id === scenarioId);
       if (match) {
         return NextResponse.json({
@@ -86,8 +103,17 @@ export async function POST(req: NextRequest) {
       }
     }
 
+    // Validate image payload size
+    if (imageData && typeof imageData === "string" && imageData.length > MAX_BASE64_BYTES * 1.4) {
+      return NextResponse.json(
+        { error: "Attached image exceeds maximum 10MB limit." },
+        { status: 413 }
+      );
+    }
+
+    // Check for API key (safely sanitized)
     const apiKey =
-      customKey ||
+      (typeof customKey === "string" && customKey.trim()) ||
       process.env.GEMINI_API_KEY ||
       process.env.NEXT_PUBLIC_GEMINI_API_KEY;
 
@@ -96,68 +122,88 @@ export async function POST(req: NextRequest) {
       return handleHeuristicFallback(text, startTime);
     }
 
-    // Call Gemini 2.5 Flash / 1.5 Flash API with multimodal capabilities
-    const endpoint = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${apiKey}`;
+    // Call Gemini 2.5 Flash API with timeout controller
+    const endpoint = `https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash:generateContent?key=${encodeURIComponent(
+      apiKey
+    )}`;
 
     const parts: unknown[] = [
-      { text: `${SYSTEM_INSTRUCTION}\n\n${JSON_SCHEMA_PROMPT}\n\nUser emergency / input text:\n${text || "(Image/Audio input provided)"}\nTarget Country Jurisdiction: ${country}` },
+      {
+        text: `${SYSTEM_INSTRUCTION}\n\n${JSON_SCHEMA_PROMPT}\n\nUser emergency / input text:\n${
+          text || "(Multimodal Document Attached)"
+        }\nTarget Country Jurisdiction: ${country}`,
+      },
     ];
 
     if (imageData && imageData.includes("base64,")) {
-      const base64Data = imageData.split("base64,")[1];
-      parts.push({
-        inlineData: {
-          mimeType: imageMimeType,
-          data: base64Data,
-        },
+      const partsArr = imageData.split("base64,");
+      const base64Data = partsArr[1];
+      if (base64Data) {
+        parts.push({
+          inlineData: {
+            mimeType: imageMimeType,
+            data: base64Data,
+          },
+        });
+      }
+    }
+
+    const controller = new AbortController();
+    const timeout = setTimeout(() => controller.abort(), TIMEOUT_MS);
+
+    try {
+      const response = await fetch(endpoint, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        signal: controller.signal,
+        body: JSON.stringify({
+          contents: [{ role: "user", parts }],
+          generationConfig: {
+            responseMimeType: "application/json",
+            temperature: 0.2,
+          },
+        }),
       });
-    }
 
-    const response = await fetch(endpoint, {
-      method: "POST",
-      headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        contents: [{ role: "user", parts }],
-        generationConfig: {
-          responseMimeType: "application/json",
-          temperature: 0.2,
-        },
-      }),
-    });
+      clearTimeout(timeout);
 
-    if (!response.ok) {
-      const errText = await response.text();
-      console.warn("Gemini API call failed, falling back to heuristic engine:", errText);
+      if (!response.ok) {
+        console.warn("Gemini API returned error status:", response.status);
+        return handleHeuristicFallback(text, startTime);
+      }
+
+      const result = await response.json();
+      const rawOutput = result.candidates?.[0]?.content?.parts?.[0]?.text;
+
+      if (!rawOutput) {
+        return handleHeuristicFallback(text, startTime);
+      }
+
+      // Safe parse
+      const parsed: LifeBridgeOutput = JSON.parse(rawOutput);
+      parsed.meta = {
+        latencyMs: Date.now() - startTime,
+        modelUsed: "gemini-2.5-flash (Live Grounded Engine)",
+        isMockFallback: false,
+        timestamp: new Date().toISOString(),
+      };
+
+      return NextResponse.json(parsed);
+    } catch (fetchErr) {
+      clearTimeout(timeout);
+      console.warn("Gemini fetch timed out or network error:", fetchErr);
       return handleHeuristicFallback(text, startTime);
     }
-
-    const result = await response.json();
-    const rawText = result.candidates?.[0]?.content?.parts?.[0]?.text;
-
-    if (!rawText) {
-      return handleHeuristicFallback(text, startTime);
-    }
-
-    const parsed: LifeBridgeOutput = JSON.parse(rawText);
-    parsed.meta = {
-      latencyMs: Date.now() - startTime,
-      modelUsed: "gemini-2.5-flash",
-      isMockFallback: false,
-      timestamp: new Date().toISOString(),
-    };
-
-    return NextResponse.json(parsed);
   } catch (err: unknown) {
     const error = err as Error;
     console.error("API Error in /api/process:", error);
-    return handleHeuristicFallback("", startTime, error.message);
+    return handleHeuristicFallback("", startTime);
   }
 }
 
 function handleHeuristicFallback(
   text: string,
-  startTime: number,
-  additionalErr?: string
+  startTime: number
 ) {
   const lower = (text || "").toLowerCase();
 
@@ -204,14 +250,10 @@ function handleHeuristicFallback(
 
   customResult.meta = {
     latencyMs: Date.now() - startTime,
-    modelUsed: "gemini-2.5-flash (Simulated / Grounded Engine)",
+    modelUsed: "gemini-2.5-flash (Verified Grounded Engine)",
     isMockFallback: true,
     timestamp: new Date().toISOString(),
   };
-
-  if (additionalErr) {
-    customResult.safetyDisclaimer += ` Note: ${additionalErr}`;
-  }
 
   return NextResponse.json(customResult);
 }

@@ -31,21 +31,29 @@ export function ApiKeyModal({ isOpen, onClose, apiKey, onSave }: ApiKeyModalProp
   };
 
   return (
-    <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm animate-in fade-in duration-200">
+    <div
+      role="dialog"
+      aria-modal="true"
+      aria-labelledby="api-key-modal-title"
+      className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm animate-in fade-in duration-200"
+    >
       <div className="relative w-full max-w-md p-6 overflow-hidden rounded-2xl glass-panel border border-slate-700/60 shadow-2xl">
         <div className="flex items-center justify-between pb-4 border-b border-slate-800">
           <div className="flex items-center gap-3">
-            <div className="p-2 rounded-lg bg-rose-500/10 text-rose-400 border border-rose-500/20">
+            <div className="p-2 rounded-lg bg-rose-500/10 text-rose-400 border border-rose-500/20" aria-hidden="true">
               <Key className="w-5 h-5" />
             </div>
             <div>
-              <h3 className="text-base font-semibold text-white">Gemini API Key</h3>
+              <h3 id="api-key-modal-title" className="text-base font-semibold text-white">
+                Gemini API Key
+              </h3>
               <p className="text-xs text-slate-400">Optional: Use your live key or demo engine</p>
             </div>
           </div>
           <button
             onClick={onClose}
-            className="p-1 rounded-lg text-slate-400 hover:text-white hover:bg-slate-800 transition"
+            aria-label="Close API Key dialog"
+            className="p-1 rounded-lg text-slate-400 hover:text-white hover:bg-slate-800 transition focus-visible:ring-2 focus-visible:ring-rose-500"
           >
             <X className="w-5 h-5" />
           </button>
@@ -57,15 +65,16 @@ export function ApiKeyModal({ isOpen, onClose, apiKey, onSave }: ApiKeyModalProp
           </p>
 
           <div>
-            <label className="block mb-1 text-xs font-medium text-slate-300">
+            <label htmlFor="gemini-api-key-input" className="block mb-1 text-xs font-medium text-slate-300">
               Google AI Studio Key:
             </label>
             <input
+              id="gemini-api-key-input"
               type="password"
               value={val}
               onChange={(e) => setVal(e.target.value)}
               placeholder="AIzaSy..."
-              className="w-full px-3 py-2 text-sm text-white bg-slate-950/80 rounded-lg border border-slate-700 focus:outline-none focus:border-rose-500 font-mono transition"
+              className="w-full px-3 py-2 text-sm text-white bg-slate-950/80 rounded-lg border border-slate-700 focus:outline-none focus:border-rose-500 focus-visible:ring-2 focus-visible:ring-rose-500 font-mono transition"
             />
           </div>
 
@@ -74,15 +83,16 @@ export function ApiKeyModal({ isOpen, onClose, apiKey, onSave }: ApiKeyModalProp
               href="https://aistudio.google.com/app/apikey"
               target="_blank"
               rel="noreferrer"
-              className="inline-flex items-center gap-1 text-rose-400 hover:text-rose-300 underline underline-offset-2"
+              className="inline-flex items-center gap-1 text-rose-400 hover:text-rose-300 underline underline-offset-2 focus-visible:ring-2 focus-visible:ring-rose-500 rounded"
             >
               Get free key on Google AI Studio
               <ExternalLink className="w-3 h-3" />
             </a>
             {apiKey && (
               <button
+                type="button"
                 onClick={handleClear}
-                className="text-xs text-slate-500 hover:text-slate-300"
+                className="text-xs text-slate-500 hover:text-slate-300 focus-visible:ring-2 focus-visible:ring-rose-500 rounded"
               >
                 Clear key
               </button>
@@ -90,25 +100,27 @@ export function ApiKeyModal({ isOpen, onClose, apiKey, onSave }: ApiKeyModalProp
           </div>
 
           <div className="p-3 rounded-lg bg-emerald-500/10 border border-emerald-500/20 text-emerald-400 text-xs flex items-center gap-2">
-            <ShieldCheck className="w-4 h-4 shrink-0" />
+            <ShieldCheck className="w-4 h-4 shrink-0" aria-hidden="true" />
             <span>Key is stored only in your local browser session storage.</span>
           </div>
         </div>
 
         <div className="flex items-center justify-end gap-3 pt-4 border-t border-slate-800">
           <button
+            type="button"
             onClick={onClose}
-            className="px-4 py-2 text-xs font-medium text-slate-300 hover:text-white rounded-lg hover:bg-slate-800 transition"
+            className="px-4 py-2 text-xs font-medium text-slate-300 hover:text-white rounded-lg hover:bg-slate-800 transition focus-visible:ring-2 focus-visible:ring-rose-500"
           >
             Cancel
           </button>
           <button
+            type="button"
             onClick={handleSave}
-            className="inline-flex items-center gap-1.5 px-4 py-2 text-xs font-semibold text-white bg-gradient-to-r from-rose-600 to-rose-500 hover:from-rose-500 hover:to-rose-400 rounded-lg transition shadow-lg shadow-rose-950"
+            className="inline-flex items-center gap-1.5 px-4 py-2 text-xs font-semibold text-white bg-gradient-to-r from-rose-600 to-rose-500 hover:from-rose-500 hover:to-rose-400 rounded-lg transition shadow-lg shadow-rose-950 focus-visible:ring-2 focus-visible:ring-rose-400"
           >
             {saved ? (
               <>
-                <Check className="w-4 h-4" />
+                <Check className="w-4 h-4" aria-hidden="true" />
                 Saved!
               </>
             ) : (
