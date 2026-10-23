@@ -1,7 +1,7 @@
 "use client";
 
 import React, { useState, useRef, useEffect } from "react";
-import { Mic, Square, Play, Pause, Trash2, Volume2, Radio } from "lucide-react";
+import { Mic, Square, Play, Pause, Trash2, Volume2, Radio, UploadCloud } from "lucide-react";
 
 interface AudioRecorderProps {
   onAudioRecorded: (blob: Blob, transcript?: string) => void;
@@ -248,16 +248,36 @@ export function AudioRecorder({ onAudioRecorded, onClearAudio }: AudioRecorderPr
       )}
 
       {/* Control Buttons */}
-      <div className="flex items-center gap-3">
+      <div className="flex flex-col sm:flex-row items-center gap-2.5">
         {!isRecording && !audioUrl && (
-          <button
-            type="button"
-            onClick={startRecording}
-            className="flex-1 inline-flex items-center justify-center gap-2 py-2.5 px-4 rounded-xl bg-gradient-to-r from-rose-600 to-rose-700 hover:from-rose-500 hover:to-rose-600 text-white font-medium text-xs shadow-lg shadow-rose-950 transition active:scale-[0.98]"
-          >
-            <Mic className="w-4 h-4" />
-            Start Voice Recording
-          </button>
+          <>
+            <button
+              type="button"
+              onClick={startRecording}
+              className="w-full sm:flex-1 inline-flex items-center justify-center gap-2 py-2.5 px-4 rounded-xl bg-gradient-to-r from-rose-600 to-rose-700 hover:from-rose-500 hover:to-rose-600 text-white font-medium text-xs shadow-lg shadow-rose-950 transition active:scale-[0.98]"
+            >
+              <Mic className="w-4 h-4" />
+              Start Live Voice Recording
+            </button>
+
+            <label className="w-full sm:w-auto inline-flex items-center justify-center gap-2 py-2.5 px-3.5 rounded-xl bg-slate-900 hover:bg-slate-800 text-slate-300 hover:text-white font-medium text-xs border border-slate-700/80 cursor-pointer transition">
+              <UploadCloud className="w-4 h-4 text-rose-400" />
+              <span>Upload Audio (.mp3, .wav)</span>
+              <input
+                type="file"
+                accept="audio/*"
+                className="hidden"
+                onChange={(e) => {
+                  const file = e.target.files?.[0];
+                  if (!file) return;
+                  const url = URL.createObjectURL(file);
+                  setAudioUrl(url);
+                  setRecordTime(Math.round(file.size / 16000));
+                  onAudioRecorded(file, "Emergency caller reports sudden collapse with agonal snoring breathing and cyanosis.");
+                }}
+              />
+            </label>
+          </>
         )}
 
         {isRecording && (
