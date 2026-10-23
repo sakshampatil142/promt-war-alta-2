@@ -66,6 +66,14 @@ const TIMEOUT_MS = 14000;
 const responseCache = new Map<string, { data: LifeBridgeOutput; expiresAt: number }>();
 const CACHE_TTL_MS = 120 * 1000; // 2 minutes
 
+/**
+ * Handles multimodal triage dispatch requests.
+ * Accepts unstructured emergency text, voice transcripts, or base64 documents,
+ * and passes them to the Gemini 2.5 Flash API or deterministic grounded engine.
+ *
+ * @param req - Incoming NextRequest containing text, imageData, country, and optional custom key.
+ * @returns JSON response conforming to LifeBridgeOutput schema with execution telemetry.
+ */
 export async function POST(req: NextRequest) {
   const startTime = Date.now();
 
