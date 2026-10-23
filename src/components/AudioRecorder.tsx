@@ -3,6 +3,31 @@
 import React, { useState, useRef, useEffect } from "react";
 import { Mic, Square, Play, Pause, Trash2, Volume2, Radio, UploadCloud } from "lucide-react";
 
+interface SpeechRecognitionAlternative {
+  transcript: string;
+}
+
+interface SpeechRecognitionResultItem {
+  isFinal: boolean;
+  [index: number]: SpeechRecognitionAlternative;
+}
+
+interface SpeechRecognitionEvent {
+  resultIndex: number;
+  results: {
+    length: number;
+    [index: number]: SpeechRecognitionResultItem;
+  };
+}
+
+interface SpeechRecognitionInstance {
+  continuous: boolean;
+  interimResults: boolean;
+  onresult: ((event: SpeechRecognitionEvent) => void) | null;
+  start: () => void;
+  stop: () => void;
+}
+
 interface AudioRecorderProps {
   onAudioRecorded: (blob: Blob, transcript?: string) => void;
   onClearAudio: () => void;
@@ -23,8 +48,7 @@ export function AudioRecorder({ onAudioRecorded, onClearAudio }: AudioRecorderPr
   const animationFrameRef = useRef<number | null>(null);
   const audioContextRef = useRef<AudioContext | null>(null);
   const analyserRef = useRef<AnalyserNode | null>(null);
-  // eslint-disable-next-line @typescript-eslint/no-explicit-any
-  const recognitionRef = useRef<any>(null);
+  const recognitionRef = useRef<SpeechRecognitionInstance | null>(null);
   const interimTranscriptRef = useRef<string>("");
 
   useEffect(() => {
@@ -103,15 +127,14 @@ export function AudioRecorder({ onAudioRecorded, onClearAudio }: AudioRecorderPr
       };
 
       // Try browser speech recognition for instant transcription
-      // eslint-disable-next-line @typescript-eslint/no-explicit-any
-      const SpeechRecognition = (window as any).SpeechRecognition || (window as any).webkitSpeechRecognition;
+      const win = typeof window !== "undefined" ? (window as unknown as Record<string, new () => SpeechRecognitionInstance>) : null;
+      const SpeechRecognition = win ? (win.SpeechRecognition || win.webkitSpeechRecognition) : null;
       if (SpeechRecognition) {
         try {
           const rec = new SpeechRecognition();
           rec.continuous = true;
           rec.interimResults = true;
-          // eslint-disable-next-line @typescript-eslint/no-explicit-any
-          rec.onresult = (event: any) => {
+          rec.onresult = (event: SpeechRecognitionEvent) => {
             let final = "";
             for (let i = event.resultIndex; i < event.results.length; ++i) {
               if (event.results[i].isFinal) {

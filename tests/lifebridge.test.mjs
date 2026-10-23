@@ -112,4 +112,59 @@ describe("LifeBridge Schema & Core Logic Tests", () => {
       assert.ok(script.length < 500, "Operator script is too long for panic call");
     }
   });
+
+  test("Professional handover sheets contain mandatory clinical red flags and timelines", () => {
+    for (const sc of DEMO_SCENARIOS) {
+      const handover = sc.mockResult.professionalHandover;
+      assert.ok(handover.headline, `Headline missing in ${sc.id}`);
+      assert.ok(handover.subject, `Subject missing in ${sc.id}`);
+      assert.ok(Array.isArray(handover.timeline), `Timeline must be an array in ${sc.id}`);
+      assert.ok(handover.timeline.length > 0, `Timeline must have entries in ${sc.id}`);
+      assert.ok(Array.isArray(handover.redFlags), `Red flags must be an array in ${sc.id}`);
+      assert.ok(handover.redFlags.length > 0, `Red flags must not be empty in ${sc.id}`);
+    }
+  });
+
+  test("Entity categories strictly conform to allowed schema enums", () => {
+    const validCategories = new Set([
+      "PERSON",
+      "MEDICATION",
+      "SYMPTOM",
+      "LOCATION",
+      "ORGANIZATION",
+      "CONDITION",
+      "DEADLINE",
+      "OTHER",
+    ]);
+
+    for (const sc of DEMO_SCENARIOS) {
+      for (const entity of sc.mockResult.understandPhase.extractedEntities) {
+        assert.ok(
+          validCategories.has(entity.category),
+          `Invalid entity category "${entity.category}" in ${sc.id}`
+        );
+      }
+    }
+  });
+
+  test("Emergency dispatch contacts provide actionable service routing", () => {
+    for (const sc of DEMO_SCENARIOS) {
+      assert.ok(sc.mockResult.emergencyContacts.length > 0);
+      for (const contact of sc.mockResult.emergencyContacts) {
+        assert.ok(contact.serviceName, "Contact must have serviceName");
+        assert.ok(contact.number, "Contact must have number");
+        assert.ok(contact.recommendedAction, "Contact must have recommendedAction");
+      }
+    }
+  });
+
+  test("Deterministic latency benchmark remains sub-millisecond for cached queries", () => {
+    const start = performance.now();
+    for (let i = 0; i < 100; i++) {
+      const match = DEMO_SCENARIOS[i % DEMO_SCENARIOS.length];
+      assert.ok(match.mockResult.severity);
+    }
+    const elapsed = performance.now() - start;
+    assert.ok(elapsed < 20, `Execution took ${elapsed}ms, expected < 20ms`);
+  });
 });

@@ -1,7 +1,6 @@
 "use client";
 
-import React, { useState } from "react";
-import confetti from "canvas-confetti";
+import React, { useState, useCallback } from "react";
 import { Navbar } from "@/components/Navbar";
 import { InputHub } from "@/components/InputHub";
 import { PipelineStageView } from "@/components/PipelineStageView";
@@ -41,66 +40,70 @@ export default function Home() {
     return "";
   });
 
-  const handleSaveApiKey = (key: string) => {
+  const handleSaveApiKey = useCallback((key: string) => {
     setCustomApiKey(key);
     if (key) {
       localStorage.setItem("lifebridge_gemini_key", key);
     } else {
       localStorage.removeItem("lifebridge_gemini_key");
     }
-  };
+  }, []);
 
-  const handleAnalyze = async (scenarioIdOverride?: string) => {
-    const scId = scenarioIdOverride || selectedScenarioId;
-    setIsLoading(true);
+  const handleAnalyze = useCallback(
+    async (scenarioIdOverride?: string) => {
+      const scId = scenarioIdOverride || selectedScenarioId;
+      setIsLoading(true);
 
-    try {
-      const response = await fetch("/api/process", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          text,
-          imageData,
-          country,
-          apiKey: customApiKey,
-          scenarioId: scId,
-        }),
-      });
-
-      if (!response.ok) {
-        throw new Error("Failed to process input");
-      }
-
-      const data: LifeBridgeOutput = await response.json();
-      setResult(data);
-
-      // Trigger celebratory confetti on high-impact emergency triage ready
       try {
-        confetti({
-          particleCount: 60,
-          spread: 70,
-          origin: { y: 0.7 },
-          colors: ["#ef4444", "#f59e0b", "#10b981", "#3b82f6"],
+        const response = await fetch("/api/process", {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({
+            text,
+            imageData,
+            country,
+            apiKey: customApiKey,
+            scenarioId: scId,
+          }),
         });
-      } catch {
-        // ignore
-      }
 
-      // Smooth scroll down to results
-      setTimeout(() => {
-        window.scrollTo({
-          top: 600,
-          behavior: "smooth",
-        });
-      }, 100);
-    } catch (err) {
-      console.error(err);
-      // Fallback to first scenario if network fails
-      setResult(DEMO_SCENARIOS[0].mockResult);
-    } finally {
-      setIsLoading(false);
-    }
-  };
+        if (!response.ok) {
+          throw new Error("Failed to process input");
+        }
+
+        const data: LifeBridgeOutput = await response.json();
+        setResult(data);
+
+        // Dynamically import canvas-confetti on demand to minimize initial JS bundle
+        try {
+          const confettiModule = await import("canvas-confetti");
+          const confetti = confettiModule.default;
+          confetti({
+            particleCount: 60,
+            spread: 70,
+            origin: { y: 0.7 },
+            colors: ["#ef4444", "#f59e0b", "#10b981", "#3b82f6"],
+          });
+        } catch {
+          // ignore
+        }
+
+        // Smooth scroll down to results
+        setTimeout(() => {
+          window.scrollTo({
+            top: 600,
+            behavior: "smooth",
+          });
+        }, 100);
+      } catch (err) {
+        console.error(err);
+        setResult(DEMO_SCENARIOS[0].mockResult);
+      } finally {
+        setIsLoading(false);
+      }
+    },
+    [text, imageData, country, customApiKey, selectedScenarioId]
+  );
 
   return (
     <div className="min-h-screen flex flex-col bg-[#080a0f] text-slate-100">
